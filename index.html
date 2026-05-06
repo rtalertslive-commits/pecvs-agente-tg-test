@@ -3179,15 +3179,14 @@
             // DEBUG: ver inputs en el DOM al momento de cargar
             const allInputs = document.querySelectorAll('input[data-day][data-col]');
             console.log('[autoLoadBitacora] inputs con data-day en DOM:', allInputs.length);
-            if (allInputs.length > 0) {
-                const sample = Array.from(allInputs).slice(0, 5).map(i => ({
-                    dataDay: i.getAttribute('data-day'),
-                    dataDayCharCodes: Array.from(i.getAttribute('data-day')).map(c => c.charCodeAt(0)),
-                    dataCol: i.getAttribute('data-col'),
-                    parent: i.closest('[data-day]')?.tagName + '.' + (i.closest('[data-day]')?.className || '(none)')
-                }));
-                console.log('[autoLoadBitacora] muestras de inputs:', sample);
-            }
+            // Recolectar TODOS los data-day únicos (string + charcodes)
+            const uniqDays = new Set();
+            Array.from(allInputs).forEach(i => uniqDays.add(i.getAttribute('data-day')));
+            const daysInfo = Array.from(uniqDays).map(d => `"${d}" [${Array.from(d).map(c=>c.charCodeAt(0)).join(',')}]`).join(' | ');
+            console.log('[autoLoadBitacora] data-day VALUES en DOM:', daysInfo);
+            // Test querySelector explícito
+            const testLun = document.querySelector('input[data-day="Lun"][data-col="P"]');
+            console.log('[autoLoadBitacora] test querySelector Lun/P:', testLun ? 'ENCONTRADO' : 'NULL');
             const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
             if (!entry) {
                 console.log('[autoLoadBitacora] entry NO encontrada. Sample de entries:',
