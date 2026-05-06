@@ -3176,6 +3176,18 @@
             const mes = MONTHS_ES[m - 1] + ' ' + y;
             const semana = document.getElementById('sel-semana').value;
             console.log('[autoLoadBitacora] buscando entry:', { mes, semana, totalEntries: state.entries.length });
+            // DEBUG: ver inputs en el DOM al momento de cargar
+            const allInputs = document.querySelectorAll('input[data-day][data-col]');
+            console.log('[autoLoadBitacora] inputs con data-day en DOM:', allInputs.length);
+            if (allInputs.length > 0) {
+                const sample = Array.from(allInputs).slice(0, 5).map(i => ({
+                    dataDay: i.getAttribute('data-day'),
+                    dataDayCharCodes: Array.from(i.getAttribute('data-day')).map(c => c.charCodeAt(0)),
+                    dataCol: i.getAttribute('data-col'),
+                    parent: i.closest('[data-day]')?.tagName + '.' + (i.closest('[data-day]')?.className || '(none)')
+                }));
+                console.log('[autoLoadBitacora] muestras de inputs:', sample);
+            }
             const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
             if (!entry) {
                 console.log('[autoLoadBitacora] entry NO encontrada. Sample de entries:',
