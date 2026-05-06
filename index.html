@@ -3175,18 +3175,23 @@
             const y = parseInt(document.getElementById('inp-year').value);
             const mes = MONTHS_ES[m - 1] + ' ' + y;
             const semana = document.getElementById('sel-semana').value;
+            console.log('[autoLoadBitacora] buscando entry:', { mes, semana, totalEntries: state.entries.length });
             const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
             if (!entry) {
-                // Limpiar inputs en cualquier layout (mobile o desktop)
+                console.log('[autoLoadBitacora] entry NO encontrada. Sample de entries:',
+                    state.entries.slice(0, 3).map(e => ({ mes: e.mes, semana: e.semana, semanaType: typeof e.semana })));
                 document.querySelectorAll('input[data-day][data-col]').forEach(i => i.value = 0);
             } else {
+                console.log('[autoLoadBitacora] entry ENCONTRADA. dias:', entry.dias.length, '— totales:', entry.totales);
                 entry.dias.forEach(d => {
+                    let inputsLlenados = 0;
                     COLS.forEach(c => {
                         const inp = document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`);
-                        if (inp) inp.value = d[c];
+                        if (inp) { inp.value = d[c]; inputsLlenados++; }
                     });
                     const primaInp = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`);
-                    if (primaInp) primaInp.value = d.prima;
+                    if (primaInp) { primaInp.value = d.prima; inputsLlenados++; }
+                    console.log(`[autoLoadBitacora]   día=${d.dia}: ${inputsLlenados} inputs llenados (esperaba 6) — valores: P=${d.P} V=${d.V} prima=${d.prima}`);
                 });
             }
             updateTotals(false);
