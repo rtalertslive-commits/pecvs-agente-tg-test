@@ -1727,66 +1727,102 @@
         };
 
         // --- AUTH LOGIC ---
-        // Login robusto: previene doble-click + ignora errores benignos.
-        // Bug detectado en Android (iOS perdona pero Android lanza auth/cancelled-popup-request
-        // cuando el usuario tap dos veces y el segundo popup mata al primero).
+        // Login con dos branches según plataforma:
+        //  - iOS PWA standalone: handler MINIMAL síncrono (estilo v1.8.0 que sí
+        //    funcionaba). signInWithPopup en iOS PWA abre el popup vía Safari como
+        //    intermediario; cualquier async/disabled antes del popup rompe la
+        //    cadena de user-gesture. v1.8.1 agregó async wrapper → se rompió.
+        //    v1.8.2 cambió a signInWithRedirect → primer login OK, segundo perdía
+        //    state (iOS PWA no preserva pendingRedirect entre reloads, confirmado
+        //    con diagnóstico). Volvemos a popup simple.
+        //  - Resto (Chrome/Android/Safari browser/iOS browser): signInWithPopup con
+        //    protección contra doble-click (bug Android: auth/cancelled-popup-request)
+        //    + silenciar errores benignos.
+        const _isIosPwaStandalone =
+            /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+            (window.navigator.standalone === true ||
+             window.matchMedia('(display-mode: standalone)').matches);
+
+        // Cleanup one-time del log diagnostico que vivio en v1.8.3-1.8.6 de mainnet
+        // (defensivo por si algun tester tenia el panel)
+        try { localStorage.removeItem('_iosDiagLog'); } catch {}
+
         let _loginInProgress = false;
-        document.getElementById('login-btn').addEventListener('click', async () => {
+        document.getElementById('login-btn').addEventListener('click', () => {
+            if (_isIosPwaStandalone) {
+                // ESTILO v1.8.0 — minimal síncrono, sin async, sin btn.disabled
+                // antes del popup. Cualquier mutación DOM o async wrapping ROMPE
+                // user-gesture en iOS PWA standalone.
+                signInWithPopup(auth, provider).catch(err => {
+                    alert("Error login: " + err.message);
+                });
+                return;
+            }
+
+            // Resto: protección anti-doble-click (bug Android v1.8.1)
             if (_loginInProgress) return;
             _loginInProgress = true;
             const btn = document.getElementById('login-btn');
             btn.disabled = true;
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (err) {
-                // Errores benignos que NO requieren alert al usuario (intentará de nuevo)
-                const benign = ['auth/cancelled-popup-request', 'auth/popup-closed-by-user'];
-                if (!benign.includes(err.code)) {
-                    alert("Error login: " + err.message);
-                }
-            } finally {
-                _loginInProgress = false;
-                btn.disabled = false;
-            }
+            signInWithPopup(auth, provider)
+                .catch(err => {
+                    const benign = ['auth/cancelled-popup-request', 'auth/popup-closed-by-user'];
+                    if (!benign.includes(err.code)) {
+                        alert("Error login: " + err.message);
+                    }
+                })
+                .finally(() => {
+                    _loginInProgress = false;
+                    btn.disabled = false;
+                });
         });
 
         onAuthStateChanged(auth, async (u) => {
-            if (u) {
-                // Detectar cambio de usuario y forzar recarga (evita data leak en memoria)
-                const lastEmail = sessionStorage.getItem('lastAgentEmail');
-                if (lastEmail && lastEmail !== u.email) {
+            try {
+                if (u) {
+                    // Detectar cambio de usuario y forzar recarga (evita data leak en memoria)
+                    const lastEmail = sessionStorage.getItem('lastAgentEmail');
+                    if (lastEmail && lastEmail !== u.email) {
+                        sessionStorage.setItem('lastAgentEmail', u.email);
+                        location.reload();
+                        return;
+                    }
                     sessionStorage.setItem('lastAgentEmail', u.email);
-                    location.reload();
-                    return;
-                }
-                sessionStorage.setItem('lastAgentEmail', u.email);
-                user = u;
-                const status = await checkUserStatus();
-                if (status === 'active') {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    await loadFromCloud();
-                    startUserDocListener(); // real-time updates desde Firestore
-                    init();
-                } else if (status === 'inactive') {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('revoked-overlay').style.display = 'flex';
-                } else if (status === 'pending') {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('pending-overlay').style.display = 'flex';
+                    user = u;
+                    const status = await checkUserStatus();
+                    if (status === 'active') {
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        await loadFromCloud();
+                        startUserDocListener(); // real-time updates desde Firestore
+                        init();
+                    } else if (status === 'inactive') {
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        document.getElementById('revoked-overlay').style.display = 'flex';
+                    } else if (status === 'pending') {
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        document.getElementById('pending-overlay').style.display = 'flex';
+                    } else {
+                        // New user — show registration form
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        document.getElementById('register-overlay').style.display = 'flex';
+                        if (u.displayName) document.getElementById('reg-name').value = u.displayName;
+                        loadRegionsDropdown();
+                    }
                 } else {
-                    // New user — show registration form
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('register-overlay').style.display = 'flex';
-                    if (u.displayName) document.getElementById('reg-name').value = u.displayName;
-                    loadRegionsDropdown();
+                    user = null;
+                    document.getElementById('login-overlay').classList.remove('hidden');
+                    ['register-overlay', 'pending-overlay', 'revoked-overlay'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
                 }
-            } else {
-                user = null;
-                document.getElementById('login-overlay').classList.remove('hidden');
-                ['register-overlay', 'pending-overlay', 'revoked-overlay'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.style.display = 'none';
-                });
+            } catch (err) {
+                // Silenciar errores benignos por signOut interrumpiendo ops Firestore:
+                // si auth.currentUser ya es null, el error vino de operaciones que
+                // estaban en vuelo (loadFromCloud, startUserDocListener) cuando el
+                // usuario hizo logout. No es un error real del login.
+                if (!auth.currentUser) return;
+                alert('Error procesando login: ' + (err.message || err));
             }
         });
 
@@ -2099,6 +2135,24 @@
                     });
                     setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
                 }).catch(err => console.log("SW error:", err));
+
+                // Auto-reload cuando el SW activa nueva versión (refuerzo del modal,
+                // crítico en iOS PWA donde el modal puede no mostrarse o el usuario
+                // dismissa). Solo recarga si NO estamos en proceso de auth (evita
+                // perder el popup en medio del login).
+                let _swReloadDone = false;
+                navigator.serviceWorker.addEventListener('message', (e) => {
+                    if (!e.data || e.data.type !== 'sw-activated') return;
+                    if (_swReloadDone) return;
+                    _swReloadDone = true;
+                    // Si hay overlay de login visible, recargamos (es seguro).
+                    // Si la app ya está cargada con usuario autenticado, dejamos
+                    // el modal de versión nueva manejarlo (usuario decide cuándo).
+                    const loginVisible = !document.getElementById('login-overlay').classList.contains('hidden');
+                    if (loginVisible) {
+                        location.reload();
+                    }
+                });
             }
 
             // Resize charts on viewport change (orientation, browser bar, resize)
