@@ -3175,34 +3175,18 @@
             const y = parseInt(document.getElementById('inp-year').value);
             const mes = MONTHS_ES[m - 1] + ' ' + y;
             const semana = document.getElementById('sel-semana').value;
-            console.log('[autoLoadBitacora] buscando entry:', { mes, semana, totalEntries: state.entries.length });
-            // DEBUG: ver inputs en el DOM al momento de cargar
-            const allInputs = document.querySelectorAll('input[data-day][data-col]');
-            console.log('[autoLoadBitacora] inputs con data-day en DOM:', allInputs.length);
-            // Recolectar TODOS los data-day únicos (string + charcodes)
-            const uniqDays = new Set();
-            Array.from(allInputs).forEach(i => uniqDays.add(i.getAttribute('data-day')));
-            const daysInfo = Array.from(uniqDays).map(d => `"${d}" [${Array.from(d).map(c=>c.charCodeAt(0)).join(',')}]`).join(' | ');
-            console.log('[autoLoadBitacora] data-day VALUES en DOM:', daysInfo);
-            // Test querySelector explícito
-            const testLun = document.querySelector('input[data-day="Lun"][data-col="P"]');
-            console.log('[autoLoadBitacora] test querySelector Lun/P:', testLun ? 'ENCONTRADO' : 'NULL');
             const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
             if (!entry) {
-                console.log('[autoLoadBitacora] entry NO encontrada. Sample de entries:',
-                    state.entries.slice(0, 3).map(e => ({ mes: e.mes, semana: e.semana, semanaType: typeof e.semana })));
+                // Limpiar inputs en cualquier layout (mobile o desktop)
                 document.querySelectorAll('input[data-day][data-col]').forEach(i => i.value = 0);
             } else {
-                console.log('[autoLoadBitacora] entry ENCONTRADA. dias:', entry.dias.length, '— totales:', entry.totales);
                 entry.dias.forEach(d => {
-                    let inputsLlenados = 0;
                     COLS.forEach(c => {
                         const inp = document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`);
-                        if (inp) { inp.value = d[c]; inputsLlenados++; }
+                        if (inp) inp.value = d[c];
                     });
                     const primaInp = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`);
-                    if (primaInp) { primaInp.value = d.prima; inputsLlenados++; }
-                    console.log(`[autoLoadBitacora]   día=${d.dia}: ${inputsLlenados} inputs llenados (esperaba 6) — valores: P=${d.P} V=${d.V} prima=${d.prima}`);
+                    if (primaInp) primaInp.value = d.prima;
                 });
             }
             updateTotals(false);
