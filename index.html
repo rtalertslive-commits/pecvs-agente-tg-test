@@ -1707,6 +1707,24 @@
             tg.ready();
             tg.expand();
 
+            // Fullscreen real (Bot API 8.0+, abril 2024). Si la version del cliente
+            // de Telegram es vieja, requestFullscreen no existe y caemos al expand
+            // tradicional (no es 100% fullscreen pero ocupa ~85% de la pantalla).
+            try {
+                if (tg.isVersionAtLeast && tg.isVersionAtLeast('8.0') && tg.requestFullscreen) {
+                    tg.requestFullscreen();
+                }
+            } catch (e) { /* ignore — fullscreen es nice-to-have */ }
+
+            // Tema visual integrado: que el header y background de Telegram matcheen
+            // el dark navy de la app (en vez de mostrar la barra blanca/gris default).
+            try {
+                if (tg.setHeaderColor) tg.setHeaderColor('#020617');
+                if (tg.setBackgroundColor) tg.setBackgroundColor('#020617');
+                // Evita cierre accidental por swipe-down en medio del scroll de la bitácora
+                if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+            } catch (e) { /* ignore */ }
+
             const initData = tg.initData;
             if (!initData || initData.length === 0) {
                 setLoginStatus('⚠ No se recibió initData de Telegram. Probá cerrar y abrir la Mini App de nuevo.');
