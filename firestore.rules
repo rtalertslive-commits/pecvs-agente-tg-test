@@ -1,0 +1,151 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  HELPERS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function myEmail() {
+      return request.auth.token.email;
+    }
+
+    // Identidad principal del usuario:
+    //  - Para roles management (director/coach/promoter) autenticados con Google,
+    //    el doc id es el email (token.email).
+    //  - Para agentes autenticados con Telegram (custom token de la Cloud Function
+    //    verifyTelegramAuth), el doc id es "tg_<telegram_id>" que es exactamente
+    //    request.auth.uid.
+    // isOwn(docId) acepta cualquiera de los dos para no fragmentar las reglas.
+    function isOwn(docId) {
+      return isAuth() && (request.auth.token.email == docId || request.auth.uid == docId);
+    }
+
+    function isDirector() {
+      // Los directores son siempre Google login → identificados por email.
+      return isAuth() && exists(/databases/$(database)/documents/directors/$(myEmail()));
+    }
+
+    function isCoach() {
+      return isAuth() && exists(/databases/$(database)/documents/coaches/$(myEmail()));
+    }
+
+    function isPromoter() {
+      return isAuth() && exists(/databases/$(database)/documents/promoters/$(myEmail()));
+    }
+
+    // ── ANTI-ESCALACIÓN DE PRIVILEGIO ──
+    function noAdminFieldsChanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'agentName', 'coachName', 'promoterName',
+        'teamCode', 'promotorCode', 'promotorTeamCode', 'directorCode',
+        'companyCode', 'regionName',
+        'status', 'type',
+        'expulsadoPor', 'expulsadoAt', 'expulsadoMotivo',
+        'reactivadoPor', 'reactivadoAt',
+        'approvedBy', 'approvedAt',
+        'migratedFrom', 'migratedAt',
+        'autoCreatedFromCoach', 'autoActivatedAt'
+      ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  USERS (Agentes — id puede ser email O "tg_<telegram_id>")
+    // ═══════════════════════════════════════════════════════════════════════
+    match /users/{userId} {
+      allow read: if isAuth();
+      allow create: if isDirector();
+      allow update: if isOwn(userId) && noAdminFieldsChanged();
+      allow update: if isDirector();
+      allow delete: if isDirector();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  COACHES (Google email-based)
+    // ═══════════════════════════════════════════════════════════════════════
+    match /coaches/{email} {
+      allow read: if isAuth();
+      allow create: if isDirector();
+      allow update: if isOwn(email) && noAdminFieldsChanged();
+      allow update: if isDirector();
+      allow delete: if isDirector();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PROMOTERS (Google email-based)
+    // ═══════════════════════════════════════════════════════════════════════
+    match /promoters/{email} {
+      allow read: if isAuth();
+      allow create: if isDirector();
+      allow update: if isOwn(email) && noAdminFieldsChanged();
+      allow update: if isDirector();
+      allow delete: if isDirector();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DIRECTORS (Google email-based, self-registration)
+    // ═══════════════════════════════════════════════════════════════════════
+    match /directors/{email} {
+      allow read: if isAuth();
+      allow create: if isOwn(email);
+      allow update: if isOwn(email);
+      allow delete: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PENDING_USERS (cola de registro — id puede ser email O "tg_<id>")
+    // ═══════════════════════════════════════════════════════════════════════
+    match /pending_users/{userId} {
+      allow read: if isOwn(userId) || isDirector();
+      allow create: if isOwn(userId);
+      allow update: if isDirector();
+      allow delete: if isOwn(userId) || isDirector();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  STORE
+    // ═══════════════════════════════════════════════════════════════════════
+    match /store/{catalogId} {
+      allow read: if isAuth();
+      allow write: if isDirector();
+      // Decremento atómico de stock en solicitarCanje:
+      allow update: if isAuth()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['items']);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  REDEMPTION REQUESTS
+    //  Campo emailSolicitante mantiene su nombre legacy pero ahora puede
+    //  contener email (Google) o uid "tg_<id>" (Telegram). La regla de create
+    //  acepta cualquiera.
+    // ═══════════════════════════════════════════════════════════════════════
+    match /redemptionRequests/{requestId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && (
+        request.resource.data.emailSolicitante == myEmail()
+        || request.resource.data.emailSolicitante == request.auth.uid
+      );
+      allow update: if isDirector();
+      allow delete: if isDirector();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CONFIG
+    // ═══════════════════════════════════════════════════════════════════════
+    match /config/{configId} {
+      allow read: if isAuth();
+      allow write: if isDirector();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DEFAULT DENY
+    // ═══════════════════════════════════════════════════════════════════════
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
