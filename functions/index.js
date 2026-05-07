@@ -91,6 +91,11 @@ exports.verifyTelegramAuth = onCall(
     {
         secrets: [TELEGRAM_BOT_TOKEN],
         cors: true,
+        // Necesario en Gen 2: Firebase SDK manda el auth token en el body (no en
+        // Authorization header), entonces Cloud Run debe permitir allUsers.
+        // El SDK valida el ID token internamente; este flag solo afecta a la
+        // capa de transporte HTTP de Cloud Run.
+        invoker: 'public',
     },
     async (request) => {
         const initData = request.data?.initData;
