@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Actividad — Registro Profesional</title>
+    <title>Actividad — Telegram Mini App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
@@ -12,13 +12,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- PWA / Mobile Web App Meta -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#d4af37">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Actividad">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Telegram Web App SDK (oficial). Expone window.Telegram.WebApp con la
+         identidad del usuario (initData firmado), tema, BackButton, MainButton,
+         showAlert/showConfirm nativos, etc. -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <style>
         :root {
@@ -1087,34 +1084,16 @@
                     <div class="login-sub"><span class="pulse-text">REGISTRO PROFESIONAL</span></div>
                 </div>
             </div>
-            <p>Tu bitácora estratégica, ahora segura en la nube. Sincroniza tus cierres y prospectos en tiempo real.</p>
-            <button class="btn-google" id="login-btn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
-                Entrar con Google
-            </button>
-            <button class="btn-install" id="install-btn" onclick="installApp()">
-                <span class="ic">📲</span>
-                <span>Instalar App en este dispositivo</span>
-            </button>
-            <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
-                <span data-app-version>—</span> · Sincronización mediante Google Firebase
+            <p id="login-status" style="text-align:center;">Conectando con Telegram…</p>
+            <div style="display:flex; justify-content:center; margin:24px 0;">
+                <div style="width:36px; height:36px; border:3px solid rgba(212,175,55,0.2); border-top-color:var(--gold); border-radius:50%; animation:spin 0.9s linear infinite;"></div>
+            </div>
+            <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8; text-align:center;">
+                <span data-app-version>—</span> · Telegram Mini App · Firebase
             </div>
         </div>
     </div>
-
-    <!-- Modal de instrucciones iOS (Safari no soporta beforeinstallprompt) -->
-    <div id="ios-install-modal" onclick="if(event.target===this)closeIosInstall()">
-        <div class="ios-card">
-            <div style="font-size:42px;margin-bottom:6px;">📲</div>
-            <h3>Instalar Actividad en tu iPhone</h3>
-            <ol>
-                <li>Pulsá el botón <strong>Compartir</strong> <span class="share-icon"></span> en la barra de Safari (abajo).</li>
-                <li>Deslizá hacia abajo y elegí <strong>"Agregar a pantalla de inicio"</strong>.</li>
-                <li>Confirmá tocando <strong>"Agregar"</strong> arriba a la derecha.</li>
-            </ol>
-            <button class="close-btn" onclick="closeIosInstall()">Entendido</button>
-        </div>
-    </div>
+    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
     <div class="app">
         <!-- HEADER -->
@@ -1481,18 +1460,6 @@
     </nav>
 
     <!-- UPDATE AVAILABLE MODAL -->
-    <div class="modal-overlay" id="update-available-modal">
-        <div class="modal-box" style="max-width:340px;text-align:center;">
-            <div style="font-size:48px;margin-bottom:8px;">🚀</div>
-            <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 8px;font-size:18px;">Nueva versión disponible</h2>
-            <p style="color:var(--slate);font-size:13px;margin:0 0 20px;line-height:1.5;">Recargá la app para obtener las últimas mejoras y arreglos.</p>
-            <div style="display:flex;gap:10px;">
-                <button class="btn btn-sm" style="flex:1;" onclick="dismissUpdate()">Después</button>
-                <button class="btn btn-sm" style="flex:1;border-color:var(--green) !important;color:var(--green) !important;" onclick="applyUpdate()">Recargar ahora</button>
-            </div>
-        </div>
-    </div>
-
     <!-- LOGOUT CONFIRMATION MODAL -->
     <div class="modal-overlay" id="logout-confirm-modal" onclick="if(event.target===this)cancelLogout()">
         <div class="modal-box" style="max-width:340px;text-align:center;">
@@ -1584,11 +1551,14 @@
         <div class="login-card" style="max-width:420px;">
             <div style="font-size:40px; margin-bottom:16px;">📝</div>
             <h2 style="color:var(--gold); font-family:'Playfair Display',serif; margin-bottom:8px;">Solicitar Acceso</h2>
-            <p style="color:var(--slate); font-size:13px; margin-bottom:24px;">Tu cuenta de Google no está registrada. Ingresa tus datos para solicitar acceso al sistema.</p>
+            <p style="color:var(--slate); font-size:13px; margin-bottom:18px;">Es tu primera vez en la app. Completá los datos y el director aprobará tu acceso.</p>
+            <div id="reg-tg-display" style="background:rgba(33,150,243,0.08); border:1px solid rgba(33,150,243,0.3); border-radius:8px; padding:8px 12px; font-size:12px; color:#60a5fa; margin-bottom:18px; text-align:left;">
+                <i class="fa-brands fa-telegram"></i> Telegram: <strong id="reg-tg-username">—</strong>
+            </div>
             <div style="text-align:left; display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
                 <div>
-                    <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU NOMBRE COMPLETO</label>
-                    <input type="text" id="reg-name" placeholder="Ej. Juan Pérez García" style="width:100%;">
+                    <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU NOMBRE COMPLETO (REAL)</label>
+                    <input type="text" id="reg-name" placeholder="Ej. Juan Pérez García" style="width:100%;" autocomplete="name">
                 </div>
                 <div>
                     <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU CLAVE DE AGENTE (4 dígitos)</label>
@@ -1607,7 +1577,6 @@
             <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:10px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
                 <i class="fa fa-paper-plane"></i> Enviar Solicitud de Acceso
             </button>
-            <button onclick="doSignOut()" style="width:100%; margin-top:10px; padding:10px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -1677,14 +1646,20 @@
 
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 
         // Initialize
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+        const functions = getFunctions(app, 'us-central1');
+        const verifyTelegramAuthFn = httpsCallable(functions, 'verifyTelegramAuth');
+
+        // Telegram WebApp handle (siempre disponible si se carga via t.me/<bot>/<app>)
+        const tg = window.Telegram && window.Telegram.WebApp;
+        let tgUser = null; // { id, username, first_name, last_name } — set tras verificación
 
         const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         const COLS = ['P', 'E', 'C', 'V', 'S'];
@@ -1711,118 +1686,66 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // ─── PWA INSTALL ───────────────────────────────────────────────────────────
-        // Captura el evento beforeinstallprompt (Chrome/Edge en Android y desktop) y
-        // muestra un boton custom. iOS Safari NO dispara este evento — para iOS
-        // detectamos el dispositivo y mostramos un modal con instrucciones manuales.
-        let _deferredInstallPrompt = null;
-        const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
-            || window.navigator.standalone === true;
-        const _isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
-
-        if (!_isStandalone) {
-            // Chrome/Edge/Android — escuchar el evento installable
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                _deferredInstallPrompt = e;
-                document.getElementById('install-btn').classList.add('show');
-            });
-            // Cuando el usuario instala correctamente
-            window.addEventListener('appinstalled', () => {
-                _deferredInstallPrompt = null;
-                document.getElementById('install-btn').classList.remove('show');
-                console.log('✅ App instalada');
-            });
-            // iOS no dispara beforeinstallprompt — mostramos el boton igual y abrimos modal
-            if (_isIOS) {
-                document.getElementById('install-btn').classList.add('show');
-            }
+        // ─── TELEGRAM MINI APP INIT ─────────────────────────────────────────────
+        // 1. Telegram inyecta initData firmado en window.Telegram.WebApp.initData
+        // 2. Lo enviamos a la Cloud Function verifyTelegramAuth que valida HMAC con
+        //    el bot token y emite Firebase custom token con uid="tg_<telegram_id>"
+        // 3. signInWithCustomToken → onAuthStateChanged dispara el flujo normal
+        //
+        // Si el script se abre fuera de Telegram (ej. directo en browser), tg.initData
+        // está vacío → mostramos error y bloqueamos el ingreso.
+        function setLoginStatus(msg) {
+            const el = document.getElementById('login-status');
+            if (el) el.textContent = msg;
         }
 
-        window.installApp = async function () {
-            if (_isIOS && !_deferredInstallPrompt) {
-                document.getElementById('ios-install-modal').classList.add('show');
+        async function bootTelegramAuth() {
+            if (!tg) {
+                setLoginStatus('⚠ Esta app solo funciona dentro de Telegram. Abrí el bot @actividad_test_bot y tocá "Open App".');
                 return;
             }
-            if (!_deferredInstallPrompt) {
-                alert('La instalación no está disponible en este navegador. Probá con Chrome o Edge.');
-                return;
-            }
-            _deferredInstallPrompt.prompt();
-            const { outcome } = await _deferredInstallPrompt.userChoice;
-            if (outcome === 'accepted') {
-                console.log('✅ Usuario aceptó la instalación');
-            }
-            _deferredInstallPrompt = null;
-            document.getElementById('install-btn').classList.remove('show');
-        };
+            tg.ready();
+            tg.expand();
 
-        window.closeIosInstall = function () {
-            document.getElementById('ios-install-modal').classList.remove('show');
-        };
-
-        // --- AUTH LOGIC ---
-        // Login con dos branches según plataforma:
-        //  - iOS PWA standalone: handler MINIMAL síncrono (estilo v1.8.0 que sí
-        //    funcionaba). signInWithPopup en iOS PWA abre el popup vía Safari como
-        //    intermediario; cualquier async/disabled antes del popup rompe la
-        //    cadena de user-gesture. v1.8.1 agregó async wrapper → se rompió.
-        //    v1.8.2 cambió a signInWithRedirect → primer login OK, segundo perdía
-        //    state (iOS PWA no preserva pendingRedirect entre reloads, confirmado
-        //    con diagnóstico). Volvemos a popup simple.
-        //  - Resto (Chrome/Android/Safari browser/iOS browser): signInWithPopup con
-        //    protección contra doble-click (bug Android: auth/cancelled-popup-request)
-        //    + silenciar errores benignos.
-        const _isIosPwaStandalone =
-            /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-            (window.navigator.standalone === true ||
-             window.matchMedia('(display-mode: standalone)').matches);
-
-        // Cleanup one-time del log diagnostico que vivio en v1.8.3-1.8.6 de mainnet
-        // (defensivo por si algun tester tenia el panel)
-        try { localStorage.removeItem('_iosDiagLog'); } catch {}
-
-        let _loginInProgress = false;
-        document.getElementById('login-btn').addEventListener('click', () => {
-            if (_isIosPwaStandalone) {
-                // ESTILO v1.8.0 — minimal síncrono, sin async, sin btn.disabled
-                // antes del popup. Cualquier mutación DOM o async wrapping ROMPE
-                // user-gesture en iOS PWA standalone.
-                signInWithPopup(auth, provider).catch(err => {
-                    alert("Error login: " + err.message);
-                });
+            const initData = tg.initData;
+            if (!initData || initData.length === 0) {
+                setLoginStatus('⚠ No se recibió initData de Telegram. Probá cerrar y abrir la Mini App de nuevo.');
                 return;
             }
 
-            // Resto: protección anti-doble-click (bug Android v1.8.1)
-            if (_loginInProgress) return;
-            _loginInProgress = true;
-            const btn = document.getElementById('login-btn');
-            btn.disabled = true;
-            signInWithPopup(auth, provider)
-                .catch(err => {
-                    const benign = ['auth/cancelled-popup-request', 'auth/popup-closed-by-user'];
-                    if (!benign.includes(err.code)) {
-                        alert("Error login: " + err.message);
-                    }
-                })
-                .finally(() => {
-                    _loginInProgress = false;
-                    btn.disabled = false;
-                });
-        });
+            try {
+                setLoginStatus('Verificando identidad…');
+                const result = await verifyTelegramAuthFn({ initData });
+                const { token, user: tgUserFromFn } = result.data;
+                tgUser = tgUserFromFn;
+
+                setLoginStatus('Iniciando sesión…');
+                await signInWithCustomToken(auth, token);
+                // onAuthStateChanged toma el control desde acá.
+            } catch (err) {
+                console.error('[bootTelegramAuth]', err);
+                setLoginStatus('⚠ Error: ' + (err.message || 'No se pudo verificar tu identidad'));
+                if (tg.showAlert) {
+                    tg.showAlert('No se pudo iniciar sesión: ' + (err.message || err));
+                }
+            }
+        }
+        // Disparo inmediato al cargar el script
+        bootTelegramAuth();
 
         onAuthStateChanged(auth, async (u) => {
             try {
                 if (u) {
-                    // Detectar cambio de usuario y forzar recarga (evita data leak en memoria)
-                    const lastEmail = sessionStorage.getItem('lastAgentEmail');
-                    if (lastEmail && lastEmail !== u.email) {
-                        sessionStorage.setItem('lastAgentEmail', u.email);
+                    // Detectar cambio de usuario (otro Telegram) y recargar para limpiar memoria.
+                    // En Mini App esto solo pasa si el usuario cambia de cuenta de Telegram,
+                    // muy raro pero defensivo.
+                    const lastUid = sessionStorage.getItem('lastAgentUid');
+                    if (lastUid && lastUid !== u.uid) {
+                        sessionStorage.setItem('lastAgentUid', u.uid);
                         location.reload();
                         return;
                     }
-                    sessionStorage.setItem('lastAgentEmail', u.email);
+                    sessionStorage.setItem('lastAgentUid', u.uid);
                     user = u;
                     const status = await checkUserStatus();
                     if (status === 'active') {
@@ -1837,10 +1760,16 @@
                         document.getElementById('login-overlay').classList.add('hidden');
                         document.getElementById('pending-overlay').style.display = 'flex';
                     } else {
-                        // New user — show registration form
+                        // Usuario nuevo: mostrar form de registro corto.
+                        // Nombre obligatorio (NO prellenado del Telegram para forzar nombre real,
+                        // no un alias tipo "Pancho 🌶️"). Username de Telegram se muestra como
+                        // info pero no editable.
                         document.getElementById('login-overlay').classList.add('hidden');
                         document.getElementById('register-overlay').style.display = 'flex';
-                        if (u.displayName) document.getElementById('reg-name').value = u.displayName;
+                        const tgUsername = tgUser?.username
+                            ? '@' + tgUser.username
+                            : (tgUser?.first_name || 'sin username');
+                        document.getElementById('reg-tg-username').textContent = tgUsername;
                         loadRegionsDropdown();
                     }
                 } else {
@@ -1863,22 +1792,17 @@
 
         async function checkUserStatus() {
             if (!user) return 'unknown';
-            const docSnap = await getDoc(doc(db, "users", user.email));
+            // Identidad Telegram: doc id = "tg_<telegram_user_id>" (= auth.uid).
+            const docSnap = await getDoc(doc(db, "users", user.uid));
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data.status === 'inactive') {
-                    // El director lo expulsó. Respetar la decisión — NO auto-reactivar
-                    // aunque la persona también sea coach activo. Si quiere reactivarlo
-                    // como agente, el director usa el botón Reactivar en Inactivos.
-                    // (Camino A: cuentas duales requieren expulsiones independientes.)
+                    // El director lo expulsó. NO auto-reactivar.
                     return 'inactive';
                 }
-                return 'active'; // active or legacy (no status field)
+                return 'active';
             }
-            // Sin doc en users/: pasar por el flujo de registro normal, aunque la persona
-            // sea coach/promotor/director activo. El director controla quién es agente —
-            // cuentas duales requieren registro y aprobación explícitos (Camino A puro).
-            const pendingSnap = await getDoc(doc(db, "pending_users", user.email));
+            const pendingSnap = await getDoc(doc(db, "pending_users", user.uid));
             if (pendingSnap.exists()) return 'pending';
             return 'new';
         }
@@ -1908,69 +1832,73 @@
             const name = document.getElementById('reg-name').value.trim();
             const code = document.getElementById('reg-code').value.trim();
             const region = document.getElementById('reg-region').value;
-            if (!name) { alert('Por favor ingresa tu nombre completo.'); return; }
-            if (!/^\d{4}$/.test(code)) { alert('La clave de agente debe ser exactamente 4 dígitos numéricos.'); return; }
-            if (!region) { alert('Por favor selecciona tu región.'); return; }
+            if (name.length < 3) {
+                if (tg && tg.showAlert) tg.showAlert('Ingresa tu nombre completo (mín 3 caracteres).');
+                else alert('Por favor ingresa tu nombre completo (mín 3 caracteres).');
+                return;
+            }
+            if (!/^\d{4}$/.test(code)) {
+                if (tg && tg.showAlert) tg.showAlert('La clave de agente debe ser exactamente 4 dígitos numéricos.');
+                else alert('La clave de agente debe ser exactamente 4 dígitos numéricos.');
+                return;
+            }
+            if (!region) {
+                if (tg && tg.showAlert) tg.showAlert('Por favor selecciona tu región.');
+                else alert('Por favor selecciona tu región.');
+                return;
+            }
             const btn = document.getElementById('reg-submit-btn');
             btn.disabled = true;
             btn.textContent = 'Enviando...';
             try {
-                await setDoc(doc(db, "pending_users", user.email), {
+                await setDoc(doc(db, "pending_users", user.uid), {
                     name,
-                    email: user.email,
+                    telegram_id: tgUser?.id || null,
+                    telegram_username: tgUser?.username || null,
+                    telegram_first_name: tgUser?.first_name || null,
+                    telegram_last_name: tgUser?.last_name || null,
                     companyCode: code,
                     region: region,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    auth_provider: 'telegram'
                 });
                 document.getElementById('register-overlay').style.display = 'none';
                 document.getElementById('pending-overlay').style.display = 'flex';
             } catch (err) {
-                alert('Error al enviar solicitud: ' + err.message);
+                if (tg && tg.showAlert) tg.showAlert('Error al enviar solicitud: ' + err.message);
+                else alert('Error al enviar solicitud: ' + err.message);
                 btn.disabled = false;
                 btn.textContent = 'Enviar Solicitud de Acceso';
             }
         };
 
         window.logout = function () {
-            // Reemplaza confirm() nativo por modal custom: confirm() puede comportarse
-            // raro dentro de PWAs standalone en iOS y deja el boton en estado :hover sticky.
+            // En Mini App, "logout" muestra el modal de confirmación. Si el usuario
+            // confirma, hacemos signOut + cerramos la Mini App (tg.close()). Telegram
+            // recordará la identidad si vuelve a abrir.
             document.getElementById('logout-confirm-modal').classList.add('open');
         };
         window.confirmLogout = function () {
             document.getElementById('logout-confirm-modal').classList.remove('open');
-            auth.signOut().then(() => location.reload());
+            auth.signOut().then(() => {
+                if (tg && tg.close) tg.close();
+                else location.reload();
+            });
         };
         window.cancelLogout = function () {
             document.getElementById('logout-confirm-modal').classList.remove('open');
         };
-        // Función directa de salir (sin modal de confirmación) — usada por los botones
-        // "Salir" en register-overlay, pending-overlay y revoked-overlay.
-        // ANTES los onclicks usaban inline `auth.signOut()...` pero `auth` no está expuesto
-        // a window (vive dentro del scope del module), así que el botón fallaba en silencio.
+        // Salida sin confirmación — usada en pending/revoked overlays.
         window.doSignOut = function () {
-            auth.signOut().then(() => location.reload());
-        };
-
-        // Modal de "nueva versión disponible". Reemplaza el confirm() nativo que
-        // no se mostraba dentro de PWA standalone en iOS.
-        let _updateModalShown = false;
-        window.showUpdateModal = function () {
-            if (_updateModalShown) return; // evitar mostrar 2 veces si statechange dispara doble
-            _updateModalShown = true;
-            document.getElementById('update-available-modal').classList.add('open');
-        };
-        window.applyUpdate = function () {
-            location.reload();
-        };
-        window.dismissUpdate = function () {
-            document.getElementById('update-available-modal').classList.remove('open');
-            // No reseteamos _updateModalShown — si dismiss, no mostrar otra vez en
-            // esta sesión (evita acoso). Lo verá la próxima vez que abra la app.
+            auth.signOut().then(() => {
+                if (tg && tg.close) tg.close();
+                else location.reload();
+            });
         };
 
         async function loadFromCloud() {
             if (!user) return;
-            const docRef = doc(db, "users", user.email);
+            const docRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 state = docSnap.data();
@@ -2005,7 +1933,7 @@
             if (!user) return;
             if (_userDocUnsubscribe) { _userDocUnsubscribe(); _userDocUnsubscribe = null; }
 
-            _userDocUnsubscribe = onSnapshot(doc(db, "users", user.email), (snap) => {
+            _userDocUnsubscribe = onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (!snap.exists()) return;
                 const fresh = snap.data();
                 let karmaChanged = false;
@@ -2070,7 +1998,7 @@
                     skipWeekends: state.skipWeekends === true,                                   // booleano estricto
                     skipWeekendsActivatedAt: state.skipWeekendsActivatedAt || null               // null si undefined/falsy
                 };
-                await setDoc(doc(db, "users", user.email), agentOwnedFields, { merge: true });
+                await setDoc(doc(db, "users", user.uid), agentOwnedFields, { merge: true });
                 console.log("Synced to cloud");
             } catch (err) { console.error("Sync error:", err); }
         }
@@ -2112,10 +2040,11 @@
         }
 
         window.init = async function () {
-            // Priority: if Cloud data didn't have a name/teamCode, check DISPLAY NAME from Google as fallback
-            if (!state.agentName && user && user.displayName) {
-                state.agentName = user.displayName;
-                saveState(); // Persist Google name to cloud immediately
+            // Si por alguna razón el state no tiene nombre (caso edge post-registro),
+            // fallback a Telegram first_name.
+            if (!state.agentName && tgUser && tgUser.first_name) {
+                state.agentName = tgUser.first_name;
+                saveState();
             }
 
             serverNow = await getServerTime();
@@ -2148,47 +2077,9 @@
                 openConfig();
             }
 
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').then(reg => {
-                    // Detección de nueva versión: usamos addEventListener (más robusto
-                    // que asignación directa) + modal custom (confirm() nativo no se ve
-                    // dentro de PWA standalone en iOS).
-                    reg.addEventListener('updatefound', () => {
-                        const newSW = reg.installing;
-                        if (!newSW) return;
-                        newSW.addEventListener('statechange', () => {
-                            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                                showUpdateModal();
-                            }
-                        });
-                    });
-                    // Forzar check de updates al volver el foco a la app y cada hora
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.visibilityState === 'visible') {
-                            reg.update().catch(() => {});
-                        }
-                    });
-                    setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
-                }).catch(err => console.log("SW error:", err));
-
-                // Auto-reload cuando el SW activa nueva versión (refuerzo del modal,
-                // crítico en iOS PWA donde el modal puede no mostrarse o el usuario
-                // dismissa). Solo recarga si NO estamos en proceso de auth (evita
-                // perder el popup en medio del login).
-                let _swReloadDone = false;
-                navigator.serviceWorker.addEventListener('message', (e) => {
-                    if (!e.data || e.data.type !== 'sw-activated') return;
-                    if (_swReloadDone) return;
-                    _swReloadDone = true;
-                    // Si hay overlay de login visible, recargamos (es seguro).
-                    // Si la app ya está cargada con usuario autenticado, dejamos
-                    // el modal de versión nueva manejarlo (usuario decide cuándo).
-                    const loginVisible = !document.getElementById('login-overlay').classList.contains('hidden');
-                    if (loginVisible) {
-                        location.reload();
-                    }
-                });
-            }
+            // (Service Worker eliminado: la Mini App vive dentro de Telegram, siempre online.
+            // Las actualizaciones se aplican automaticamente al re-abrir la Mini App
+            // — Telegram fetchea el HTML fresco cada vez.)
 
             // Resize charts on viewport change (orientation, browser bar, resize)
             // iOS dispara orientationchange ANTES de que el layout reflow termine,
@@ -2237,7 +2128,7 @@
                 }
 
                 // Recargar karma desde Firestore (otro dispositivo pudo haber guardado)
-                const docSnap = await getDoc(doc(db, 'users', user.email));
+                const docSnap = await getDoc(doc(db, 'users', user.uid));
                 if (docSnap.exists()) {
                     const fresh = docSnap.data();
                     state.karma = fresh.karma || 0;
@@ -2612,7 +2503,9 @@
             const container = document.getElementById('tienda-mis-solicitudes');
             if (!container || !user) return;
             try {
-                const q = query(collection(db, 'redemptionRequests'), where('emailSolicitante', '==', user.email));
+                // emailSolicitante: nombre legacy del campo. Ahora contiene auth.uid (= "tg_<id>")
+                // para usuarios Telegram. Director sigue queryando por este campo.
+                const q = query(collection(db, 'redemptionRequests'), where('emailSolicitante', '==', user.uid));
                 const snap = await getDocs(q);
                 const reqs = snap.docs.map(d => d.data()).sort((a,b) => (b.fechaSolicitud||'').localeCompare(a.fechaSolicitud||''));
                 container.innerHTML = reqs.length ? reqs.map(r => {
@@ -2688,8 +2581,10 @@
                         tx.update(catRef, { items });
                     }
                     tx.set(newReqRef, {
-                        emailSolicitante: user.email,
-                        nombreSolicitante: state.agentName || user.displayName || user.email,
+                        emailSolicitante: user.uid,  // legacy field name; ahora contiene "tg_<id>"
+                        agenteUid: user.uid,         // nombre semantico para nuevas integraciones
+                        telegramUsername: tgUser?.username || null,
+                        nombreSolicitante: state.agentName || tgUser?.first_name || user.uid,
                         rol: 'agente',
                         coachTeamCode: state.teamCode || '',
                         directorCode: state.directorCode || '',
@@ -2733,8 +2628,8 @@
             const codeEl = document.getElementById('disp-mycode');
             const regionEl = document.getElementById('disp-myregion');
             if (nameEl)   nameEl.textContent   = state.agentName || '—';
-            // Email: el de la sesión de Google (no el del state, porque puede ser distinto si hay desincronización)
-            if (emailEl)  emailEl.textContent  = (user && user.email) || state.email || '—';
+            // En Mini App: mostrar Telegram username en vez de email (no hay email).
+            if (emailEl)  emailEl.textContent  = (tgUser?.username ? '@' + tgUser.username : '—');
             if (codeEl)   codeEl.textContent   = state.companyCode || state.teamCode || '—';
             if (regionEl) regionEl.textContent = state.regionName || '—';
             // Reflejar estado actual del toggle "no trabajo fines de semana"
@@ -3217,9 +3112,10 @@
         }
 
         window.saveCurrentWeek = function (silent = false) {
-            // Si el agente no tiene nombre configurado, usar displayName de Google o email como fallback
+            // Si el agente no tiene nombre configurado (caso muy raro post-registro),
+            // fallback a Telegram first_name.
             if (!state.agentName && user) {
-                state.agentName = user.displayName || user.email || '';
+                state.agentName = tgUser?.first_name || '';
                 if (state.agentName) syncToCloud();
             }
             if (!state.agentName) return;
