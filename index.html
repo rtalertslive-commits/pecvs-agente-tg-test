@@ -1706,22 +1706,17 @@
             }
             tg.ready();
             tg.expand();
+            // NOTA: NO llamamos requestFullscreen(). En iOS Telegram igual mantiene
+            // la barra "Close / Actividad - mini app" arriba (Apple HIG lo exige).
+            // En Android requestFullscreen() la sacaria, pero ahi el unico exit es
+            // back-gesture o el boton Salir interno — preferimos consistencia
+            // visual cross-platform manteniendo siempre el Close button de Telegram.
 
-            // Fullscreen real (Bot API 8.0+, abril 2024). Si la version del cliente
-            // de Telegram es vieja, requestFullscreen no existe y caemos al expand
-            // tradicional (no es 100% fullscreen pero ocupa ~85% de la pantalla).
-            try {
-                if (tg.isVersionAtLeast && tg.isVersionAtLeast('8.0') && tg.requestFullscreen) {
-                    tg.requestFullscreen();
-                }
-            } catch (e) { /* ignore — fullscreen es nice-to-have */ }
-
-            // Tema visual integrado: que el header y background de Telegram matcheen
-            // el dark navy de la app (en vez de mostrar la barra blanca/gris default).
+            // Tema visual integrado: header de Telegram en dark navy (sin franja blanca).
             try {
                 if (tg.setHeaderColor) tg.setHeaderColor('#020617');
                 if (tg.setBackgroundColor) tg.setBackgroundColor('#020617');
-                // Evita cierre accidental por swipe-down en medio del scroll de la bitácora
+                // Evita cierre accidental por swipe-down al scrollear bitacora
                 if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
             } catch (e) { /* ignore */ }
 
