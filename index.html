@@ -789,6 +789,15 @@
             letter-spacing: 1px;
             line-height: 1;
         }
+        /* Icono SVG del totopo (Variante H — reemplaza al emoji 🌮).
+           Hereda font-size del padre (1em x 1em). Definido en <symbol> al inicio del <body>. */
+        .totopo-icon {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+            vertical-align: -0.15em;
+            flex-shrink: 0;
+        }
         #karma-badge .karma-lbl {
             color: var(--slate);
             font-size: 10px;
@@ -1042,6 +1051,32 @@
 </head>
 
 <body>
+    <!-- ICONO SVG TOTOPO (Variante H — hecho a mano, asimétrico).
+         Reusable via <svg class="totopo-icon"><use href="#totopo"/></svg> -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <linearGradient id="totopoGrad" x1="0.2" y1="0" x2="0.8" y2="1">
+                <stop offset="0%" stop-color="#f5d77a"/>
+                <stop offset="100%" stop-color="#c9941f"/>
+            </linearGradient>
+        </defs>
+        <symbol id="totopo" viewBox="0 0 100 100">
+            <path d="M 47 11 Q 51 11 56 16 L 63 22 Q 71 32 76 42 L 84 56 Q 89 68 90 75 Q 91 80 87 84 L 78 84 Q 65 83 50 84 Q 34 83 22 84 L 14 84 Q 9 83 9 78 Q 11 70 16 60 L 24 45 Q 30 32 36 23 L 41 16 Q 44 11 47 11 Z" fill="url(#totopoGrad)" stroke="#4a2706" stroke-width="3.2" stroke-linejoin="round"/>
+            <circle cx="36" cy="46" r="3.5" fill="#3a1f04" opacity="0.85"/>
+            <circle cx="58" cy="38" r="3" fill="#3a1f04" opacity="0.8"/>
+            <circle cx="48" cy="58" r="3.8" fill="#3a1f04" opacity="0.88"/>
+            <circle cx="65" cy="55" r="2.5" fill="#3a1f04" opacity="0.75"/>
+            <circle cx="30" cy="65" r="2.6" fill="#3a1f04" opacity="0.78"/>
+            <circle cx="55" cy="72" r="2.2" fill="#3a1f04" opacity="0.75"/>
+            <circle cx="40" cy="74" r="1.8" fill="#3a1f04" opacity="0.7"/>
+            <circle cx="68" cy="72" r="2" fill="#3a1f04" opacity="0.72"/>
+            <circle cx="45" cy="34" r="1.5" fill="#3a1f04" opacity="0.65"/>
+            <circle cx="52" cy="50" r="1.5" fill="#fff5d0" opacity="0.55"/>
+            <circle cx="38" cy="58" r="1.1" fill="#fff5d0" opacity="0.5"/>
+            <circle cx="60" cy="62" r="0.9" fill="#fff5d0" opacity="0.45"/>
+        </symbol>
+    </svg>
+
     <!-- LOGIN OVERLAY -->
     <div id="login-overlay">
         <div class="login-card">
@@ -1094,9 +1129,9 @@
                 </div>
                 <p id="agent-display">Agente: —</p>
                 <div id="karma-badge">
-                    <span class="star">🌮</span>
+                    <span class="star"><svg class="totopo-icon"><use href="#totopo"/></svg></span>
                     <span class="karma-num" id="karma-value">0</span>
-                    <span class="karma-lbl">tacos</span>
+                    <span class="karma-lbl">totopos</span>
                 </div>
             </div>
             <div class="header-right">
@@ -1152,7 +1187,7 @@
                 </div>
 
                 <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:10px 14px; margin:14px 0; font-size:12px; color:var(--slate); line-height:1.5;">
-                    ⏱️ <strong>Día en curso:</strong> edítalo libremente durante el día — agrega, cambia o corrige tus P-E-C-V-S-$ las veces que quieras (se guarda automáticamente). A las <strong>12:00 AM</strong> se hace el corte automático y se te dan los tacos 🌮
+                    ⏱️ <strong>Día en curso:</strong> edítalo libremente durante el día — agrega, cambia o corrige tus P-E-C-V-S-$ las veces que quieras (se guarda automáticamente). A las <strong>12:00 AM</strong> se hace el corte automático y se te dan los totopos <svg class="totopo-icon"><use href="#totopo"/></svg>
                 </div>
 
                 <div class="table-scroll">
@@ -1405,7 +1440,7 @@
         <!-- ═══════════════════ TAB: TIENDA ═══════════════════ -->
         <div id="tab-tienda" class="tab-panel">
             <div class="card" style="margin-bottom:16px;">
-                <p class="card-title"><i class="fa fa-store"></i> Tienda — Canjea tus Tacos</p>
+                <p class="card-title"><i class="fa fa-store"></i> Tienda — Canjea tus Totopos</p>
                 <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Selecciona un item y solicita el canje. El director lo aprobará.</p>
                 <div id="tienda-items" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
                     <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
@@ -1516,7 +1551,7 @@
                                 🌙 No trabajo fines de semana
                             </div>
                             <div id="weekend-toggle-desc" style="font-size:11px; color:var(--slate); line-height:1.45;">
-                                Si lo activas, sábados y domingos se marcarán automáticamente como "Sin intento de venta" para que ganes tus 🌮.
+                                Si lo activas, sábados y domingos se marcarán automáticamente como "Sin intento de venta" para que ganes tus <svg class="totopo-icon"><use href="#totopo"/></svg>.
                             </div>
                         </div>
                         <label class="switch">
@@ -1600,12 +1635,12 @@
     <div id="karma-celebration">
         <div id="karma-particles"></div>
         <div style="text-align:center;position:relative;z-index:2;padding:30px 20px;max-width:360px;">
-            <div style="font-size:70px;animation:karmaBounce 0.7s ease-in-out infinite;display:inline-block;margin-bottom:8px;">🌮</div>
+            <div style="animation:karmaBounce 0.7s ease-in-out infinite;display:inline-block;margin-bottom:8px;"><svg style="width:70px;height:70px;display:block;"><use href="#totopo"/></svg></div>
             <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:34px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">¡Felicidades!</div>
             <div style="color:rgba(255,255,255,0.7);font-size:15px;margin-bottom:12px;">Ganaste desde tu última visita</div>
             <div id="celebrate-earned" style="font-size:80px;font-weight:900;color:var(--gold);animation:karmaGlow 1.5s ease-in-out infinite;line-height:1;">+0</div>
-            <div style="color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Tacos 🌮</div>
-            <div id="celebrate-total" style="color:var(--slate);font-size:13px;margin-bottom:28px;">Saldo total: 0 tacos</div>
+            <div style="color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
+            <div id="celebrate-total" style="color:var(--slate);font-size:13px;margin-bottom:28px;">Saldo total: 0 totopos</div>
             <button onclick="dismissKarmaCelebration()" style="padding:14px 48px;background:linear-gradient(135deg,var(--gold),#f0c040);color:#000;border:none;border-radius:30px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px rgba(212,175,55,0.4);">¡GENIAL! 🎉</button>
         </div>
     </div>
@@ -2418,7 +2453,7 @@
 
         window.showKarmaCelebration = function (earned) {
             document.getElementById('celebrate-earned').textContent = '+' + earned.toLocaleString();
-            document.getElementById('celebrate-total').textContent = 'Saldo total: ' + (state.karma || 0).toLocaleString() + ' tacos 🌮';
+            document.getElementById('celebrate-total').textContent = 'Saldo total: ' + (state.karma || 0).toLocaleString() + ' totopos';
             document.getElementById('karma-celebration').classList.add('show');
             createCoinParticles();
             playCashSound();
@@ -2563,10 +2598,10 @@
                         <div style="font-size:36px;text-align:center;">${eEmoji}</div>
                         <div style="font-weight:700;font-size:14px;text-align:center;">${eNombre}</div>
                         <div style="font-size:12px;color:var(--slate);text-align:center;">${eDesc}</div>
-                        <div style="text-align:center;font-weight:800;color:var(--gold);">🌮 ${costoNum} tacos</div>
+                        <div style="text-align:center;font-weight:800;color:var(--gold);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos</div>
                         ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${Number(item.stock)||0}</div>` : ''}
                         <button class="btn btn-sm ${puedo&&!sinStock?'btn-green':''}" ${(!puedo||sinStock)?'disabled':''} onclick="solicitarCanje('${eId}','${eNombre}',${costoNum},'${eEmoji}','${eCatalog}')" style="${sinStock?'opacity:0.4':''}">
-                            ${sinStock ? 'Sin stock' : !puedo ? 'Tacos insuficientes' : '🛒 Solicitar canje'}
+                            ${sinStock ? 'Sin stock' : !puedo ? 'Totopos insuficientes' : '🛒 Solicitar canje'}
                         </button>
                     </div>`;
                 }).join('');
@@ -2590,7 +2625,7 @@
                     return `<div style="padding:10px 14px;background:var(--panel);border-radius:8px;border-left:3px solid ${color};display:flex;justify-content:space-between;align-items:center;gap:8px;">
                         <div>
                             <div style="font-weight:600;font-size:13px;">${eEmoji} ${eName}</div>
-                            <div style="font-size:11px;color:var(--slate);">🌮 ${costoNum} tacos &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
+                            <div style="font-size:11px;color:var(--slate);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
                         </div>
                         <span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>
                     </div>`;
@@ -2601,7 +2636,7 @@
         // Entry point del botón de canje. Reemplaza confirm() nativo por modal custom
         // (confirm() no se ve dentro de PWA standalone iOS).
         window.solicitarCanje = function(itemId, itemNombre, costo, emoji, catalogDoc) {
-            if ((state.karma || 0) < costo) { alert('Tacos insuficientes.'); return; }
+            if ((state.karma || 0) < costo) { alert('Totopos insuficientes.'); return; }
             openCanjeConfirm(itemId, itemNombre, costo, emoji, catalogDoc);
         };
 
@@ -2610,7 +2645,7 @@
         window.openCanjeConfirm = function (itemId, itemNombre, costo, emoji, catalogDoc) {
             _pendingCanje = { itemId, itemNombre, costo, emoji, catalogDoc };
             document.getElementById('canje-confirm-text').textContent =
-                `¿Solicitar canje de "${itemNombre}" por 🌮 ${costo} tacos? El item te queda reservado hasta que el director apruebe.`;
+                `¿Solicitar canje de "${itemNombre}" por ${costo} totopos? El item te queda reservado hasta que el director apruebe.`;
             document.getElementById('canje-confirm-modal').classList.add('open');
         };
         window.confirmCanje = async function () {
@@ -2712,7 +2747,7 @@
         // ─── TOGGLE "NO TRABAJO FINES DE SEMANA" ─────────────────────────────────────
         // Se aplica SOLO desde la fecha de activación hacia adelante. Días pasados
         // (incluso de la semana actual previos a la activación) quedan inmutables.
-        // Los días auto-marcados ganan los mismos tacos que un día con actividad real.
+        // Los días auto-marcados ganan los mismos totopos que un día con actividad real.
 
         function updateWeekendToggleDescription() {
             const desc = document.getElementById('weekend-toggle-desc');
@@ -2722,7 +2757,7 @@
                 const fmt = dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
                 desc.innerHTML = `<span style="color:var(--green);">✓ Activo desde ${fmt}.</span> Sábados y domingos se auto-marcan a partir de esa fecha.`;
             } else {
-                desc.innerHTML = `Si lo activas, sábados y domingos se marcarán automáticamente como "Sin intento de venta" para que ganes tus 🌮.`;
+                desc.innerHTML = `Si lo activas, sábados y domingos se marcarán automáticamente como "Sin intento de venta" para que ganes tus <svg class="totopo-icon"><use href="#totopo"/></svg>.`;
                 desc.style.color = '';
             }
         }
@@ -2734,7 +2769,7 @@
 
             if (enabling) {
                 const todayFmt = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-                if (!confirm(`¿Activar "no trabajo fines de semana"?\n\nA partir de HOY (${todayFmt}), los sábados y domingos se marcarán automáticamente como "Sin intento de venta" y ganarás los 🌮 del día.\n\nLos fines de semana anteriores quedan como están.`)) {
+                if (!confirm(`¿Activar "no trabajo fines de semana"?\n\nA partir de HOY (${todayFmt}), los sábados y domingos se marcarán automáticamente como "Sin intento de venta" y ganarás los totopos del día.\n\nLos fines de semana anteriores quedan como están.`)) {
                     checkbox.checked = false;
                     return;
                 }
@@ -2866,7 +2901,7 @@
 
         // ─── DECLARAR / REVERTIR DÍA "SIN INTENTO DE VENTA" ──────────────────────────
         // El agente puede declarar honestamente que hoy no hizo ningún intento de venta.
-        // Recibe los tacos del día igual que un día válido (honor system + transparencia
+        // Recibe los totopos del día igual que un día válido (honor system + transparencia
         // hacia el director). Solo aplica al día actual; al día siguiente queda congelado.
 
         window.marcarSinActividad = async function (dayName) {
@@ -2918,7 +2953,7 @@
         window.mostrarErroresEmbudo = function (dayName, errors) {
             if (!errors || !errors.length) return;
             const pts = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
-            alert(`⚠️ El embudo de ${dayName} tiene errores:\n\n• ${errors.join('\n• ')}\n\nCorrige para ganar tus ${pts} 🌮 del día.`);
+            alert(`⚠️ El embudo de ${dayName} tiene errores:\n\n• ${errors.join('\n• ')}\n\nCorrige para ganar tus ${pts} totopos del día.`);
         };
 
         // ─── MOBILE BITACORA RENDER ─────────────────────────────────────────────
@@ -2955,7 +2990,7 @@
                 <div class="m-today-noactivity" id="noact-view-${dayName}" ${isMarked ? '' : 'style="display:none;"'}>
                     <div class="moon">🌙</div>
                     <h3>Sin intento de venta hoy</h3>
-                    <div class="sub">+${(pointsConfig && pointsConfig.agentDailyPoints) || 10} 🌮 ganados por honestidad</div>
+                    <div class="sub">+${(pointsConfig && pointsConfig.agentDailyPoints) || 10} <svg class="totopo-icon"><use href="#totopo"/></svg> ganados por honestidad</div>
                     <button class="btn-revert-noactivity" onclick="revertirSinActividad('${dayName}')">
                         <i class="fa fa-pen"></i> Editar día
                     </button>
@@ -3096,7 +3131,7 @@
                 if (cell) {
                     cell.textContent = sinActividad ? '🌙' : (!any ? '—' : (ok ? '🟢' : '🔴'));
                     cell.title = sinActividad
-                        ? 'Día declarado sin intento de venta — +tacos por honestidad'
+                        ? 'Día declarado sin intento de venta — +totopos por honestidad'
                         : (ok ? 'Todo correcto' : '⚠️ ERRORES:\n• ' + errors.join('\n• '));
                 }
                 // Actualizar el mensaje al lado del embudo (solo existe en la card de HOY)
@@ -3113,7 +3148,7 @@
                         statusMsg.className = 'm-status-msg error';
                         statusMsg.innerHTML = `
                             <div>
-                                Corrige el embudo · ${pts} 🌮
+                                Corrige el embudo · ${pts} <svg class="totopo-icon"><use href="#totopo"/></svg>
                                 <small>Toca para ver errores</small>
                             </div>
                             <span class="arrow"><i class="fa fa-chevron-right"></i></span>`;
