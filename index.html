@@ -3399,7 +3399,7 @@
             const file = new File([data], filename, { type: 'application/json' });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
-                    await navigator.share({ files: [file], title: 'Reporte PECVS$ - ' + state.agentName });
+                    await navigator.share({ files: [file], title: 'Reporte PECS$ - ' + state.agentName });
                 } catch (err) { if (err.name !== 'AbortError') exportJSON(); }
             } else { exportJSON(); }
         }
